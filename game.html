@@ -830,3 +830,283 @@ animate();
 
 </body>
 </html>
+// ======================
+// DASH
+// ======================
+
+let stamina = 100;
+let sprint = false;
+
+document.addEventListener("keydown",(e)=>{
+    if(e.key==="Shift"){
+        sprint=true;
+    }
+});
+
+document.addEventListener("keyup",(e)=>{
+    if(e.key==="Shift"){
+        sprint=false;
+    }
+});
+
+// ======================
+// PLAYER STATUS
+// ======================
+
+let level = 1;
+let exp = 0;
+
+// UI
+const ui = document.createElement("div");
+
+ui.style.position="absolute";
+ui.style.top="10px";
+ui.style.left="10px";
+ui.style.color="white";
+ui.style.fontSize="20px";
+ui.style.fontFamily="sans-serif";
+ui.style.zIndex="100";
+
+document.body.appendChild(ui);
+
+// ======================
+// DAMAGE TEXT
+// ======================
+
+function damageText(x,y,z,text){
+
+    const div=document.createElement("div");
+
+    div.innerHTML=text;
+
+    div.style.position="absolute";
+    div.style.color="red";
+    div.style.fontSize="30px";
+    div.style.fontWeight="bold";
+
+    document.body.appendChild(div);
+
+    let t=0;
+
+    function anim(){
+
+        t++;
+
+        div.style.left=(window.innerWidth/2+Math.random()*100-50)+"px";
+        div.style.top=(window.innerHeight/2-t*2)+"px";
+
+        if(t<60){
+            requestAnimationFrame(anim);
+        }else{
+            div.remove();
+        }
+    }
+
+    anim();
+}
+
+// ======================
+// ENEMY SYSTEM
+// ======================
+
+const enemies=[];
+
+function createEnemy(x,z){
+
+    const geo=new THREE.BoxGeometry(2,4,2);
+
+    const mat=new THREE.MeshStandardMaterial({
+        color:0xaa0000
+    });
+
+    const enemy=new THREE.Mesh(geo,mat);
+
+    enemy.position.set(x,2,z);
+
+    enemy.hp=100;
+
+    scene.add(enemy);
+
+    enemies.push(enemy);
+}
+
+for(let i=0;i<15;i++){
+
+    createEnemy(
+        Math.random()*200-100,
+        Math.random()*200-100
+    );
+}
+
+// ======================
+// ATTACK
+// ======================
+
+let attack=false;
+
+document.addEventListener("mousedown",()=>{
+
+    attack=true;
+
+    enemies.forEach(enemy=>{
+
+        const d=enemy.position.distanceTo(camera.position);
+
+        if(d<6){
+
+            enemy.hp-=25;
+
+            damageText(
+                enemy.position.x,
+                enemy.position.y,
+                enemy.position.z,
+                "25"
+            );
+
+            enemy.material.color.set(0xffffff);
+
+            setTimeout(()=>{
+                enemy.material.color.set(0xaa0000);
+            },100);
+
+            if(enemy.hp<=0){
+
+                scene.remove(enemy);
+
+                exp+=20;
+
+                if(exp>=100){
+
+                    exp=0;
+                    level++;
+
+                    alert("LEVEL UP!");
+                }
+            }
+        }
+    });
+
+    setTimeout(()=>{
+        attack=false;
+    },200);
+});
+
+// ======================
+// TREES
+// ======================
+
+for(let i=0;i<80;i++){
+
+    const trunk=new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5,0.5,5),
+        new THREE.MeshStandardMaterial({color:0x663300})
+    );
+
+    trunk.position.set(
+        Math.random()*400-200,
+        2.5,
+        Math.random()*400-200
+    );
+
+    scene.add(trunk);
+
+    const leaves=new THREE.Mesh(
+        new THREE.SphereGeometry(3),
+        new THREE.MeshStandardMaterial({color:0x00aa00})
+    );
+
+    leaves.position.set(
+        trunk.position.x,
+        trunk.position.y+4,
+        trunk.position.z
+    );
+
+    scene.add(leaves);
+}
+
+// ======================
+// SKY
+// ======================
+
+scene.background=new THREE.Color(0x001133);
+
+// ======================
+// STARS
+// ======================
+
+for(let i=0;i<500;i++){
+
+    const star=new THREE.Mesh(
+
+        new THREE.SphereGeometry(0.2),
+
+        new THREE.MeshBasicMaterial({
+            color:0xffffff
+        })
+    );
+
+    star.position.set(
+        Math.random()*1000-500,
+        Math.random()*500,
+        Math.random()*1000-500
+    );
+
+    scene.add(star);
+}
+
+// ======================
+// UPDATE LOOP
+// ======================
+
+function updateGame(){
+
+    requestAnimationFrame(updateGame);
+
+    let speed=0.15;
+
+    if(sprint && stamina>0){
+
+        speed=0.35;
+
+        stamina-=0.5;
+
+    }else{
+
+        stamina+=0.2;
+    }
+
+    stamina=Math.max(0,Math.min(100,stamina));
+
+    enemies.forEach(enemy=>{
+
+        enemy.lookAt(camera.position);
+
+        const dir=new THREE.Vector3();
+
+        dir.subVectors(
+            camera.position,
+            enemy.position
+        ).normalize();
+
+        enemy.position.add(
+            dir.multiplyScalar(0.03)
+        );
+
+        if(enemy.position.distanceTo(camera.position)<2){
+
+            hp-=0.1;
+        }
+    });
+
+    ui.innerHTML=
+    `
+    HP: ${Math.floor(hp)}<br>
+    STAMINA: ${Math.floor(stamina)}<br>
+    LEVEL: ${level}<br>
+    EXP: ${exp}/100
+    `;
+
+    renderer.render(scene,camera);
+}
+
+updateGame();
