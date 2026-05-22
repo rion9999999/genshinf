@@ -1,11 +1,11 @@
-game.html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>ULTIMATE ANIME RPG</title>
+<title>Ultimate RPG</title>
 
 <style>
+
 body{
     margin:0;
     overflow:hidden;
@@ -19,21 +19,21 @@ canvas{
 
 #ui{
     position:absolute;
-    top:15px;
-    left:15px;
+    top:10px;
+    left:10px;
     color:white;
     z-index:100;
     background:rgba(0,0,0,0.5);
     padding:15px;
     border-radius:15px;
-    width:260px;
-    backdrop-filter:blur(8px);
+    width:250px;
+    backdrop-filter:blur(10px);
 }
 
 .bar{
-    width:200px;
+    width:220px;
     height:18px;
-    background:#333;
+    background:#222;
     border-radius:20px;
     overflow:hidden;
     margin-bottom:10px;
@@ -66,29 +66,30 @@ canvas{
     z-index:100;
 }
 
-#skills{
+#skillbar{
     position:absolute;
     bottom:20px;
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    gap:20px;
+    gap:15px;
     z-index:100;
 }
 
 .skill{
     width:70px;
     height:70px;
-    background:rgba(255,255,255,0.1);
-    border:2px solid white;
     border-radius:20px;
+    border:2px solid white;
+    background:rgba(255,255,255,0.1);
     color:white;
     display:flex;
     align-items:center;
     justify-content:center;
     font-size:30px;
-    backdrop-filter:blur(8px);
+    backdrop-filter:blur(10px);
 }
+
 </style>
 </head>
 
@@ -114,14 +115,14 @@ canvas{
 </div>
 
 <div id="text">
-Level: 1<br>
-Coins: 0<br>
-Enemies: 25
+LEVEL: 1<br>
+COINS: 0<br>
+ENEMIES: 20
 </div>
 
 </div>
 
-<div id="skills">
+<div id="skillbar">
 <div class="skill">⚔️</div>
 <div class="skill">🔥</div>
 <div class="skill">⚡</div>
@@ -133,18 +134,15 @@ Enemies: 25
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152/build/three.module.js';
 
 
-
-
-
-// ======================
+// ====================
 // 基本
-// ======================
+// ====================
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x87ceeb);
+scene.background = new THREE.Color(0x001133);
 
-scene.fog = new THREE.Fog(0x87ceeb,80,300);
+scene.fog = new THREE.Fog(0x001133,80,300);
 
 const camera = new THREE.PerspectiveCamera(
 75,
@@ -165,34 +163,34 @@ document.body.appendChild(renderer.domElement);
 
 
 
+// ====================
+// ライト
+// ====================
 
-// ======================
-// 光
-// ======================
+const ambient = new THREE.AmbientLight(0xffffff,0.7);
 
-const sun = new THREE.DirectionalLight(0xffffff,2);
+scene.add(ambient);
 
-sun.position.set(50,100,50);
+const moon = new THREE.DirectionalLight(0xffffff,1.5);
 
-sun.castShadow = true;
+moon.position.set(50,100,50);
 
-scene.add(sun);
+moon.castShadow = true;
 
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
+scene.add(moon);
 
 
 
-
-// ======================
+// ====================
 // 地面
-// ======================
+// ====================
 
 const ground = new THREE.Mesh(
 
 new THREE.PlaneGeometry(1000,1000),
 
 new THREE.MeshStandardMaterial({
-color:0x3fa34d
+color:0x226622
 })
 
 );
@@ -205,34 +203,105 @@ scene.add(ground);
 
 
 
+// ====================
+// 星
+// ====================
 
-// ======================
+for(let i=0;i<1000;i++){
+
+const star = new THREE.Mesh(
+
+new THREE.SphereGeometry(0.15),
+
+new THREE.MeshBasicMaterial({
+color:0xffffff
+})
+
+);
+
+star.position.set(
+Math.random()*2000-1000,
+Math.random()*800,
+Math.random()*2000-1000
+);
+
+scene.add(star);
+
+}
+
+
+
+// ====================
+// 木
+// ====================
+
+for(let i=0;i<200;i++){
+
+const trunk = new THREE.Mesh(
+
+new THREE.CylinderGeometry(0.5,0.7,6),
+
+new THREE.MeshStandardMaterial({
+color:0x663300
+})
+
+);
+
+trunk.position.set(
+Math.random()*900-450,
+3,
+Math.random()*900-450
+);
+
+scene.add(trunk);
+
+const leaves = new THREE.Mesh(
+
+new THREE.SphereGeometry(3),
+
+new THREE.MeshStandardMaterial({
+color:0x00aa00
+})
+
+);
+
+leaves.position.set(
+trunk.position.x,
+trunk.position.y+5,
+trunk.position.z
+);
+
+scene.add(leaves);
+
+}
+
+
+
+// ====================
 // 山
-// ======================
+// ====================
 
-for(let i=0;i<70;i++){
+for(let i=0;i<40;i++){
 
 const mountain = new THREE.Mesh(
 
 new THREE.ConeGeometry(
 10+Math.random()*20,
-40+Math.random()*100,
+50+Math.random()*100,
 6
 ),
 
 new THREE.MeshStandardMaterial({
-color:0x666666
+color:0x555555
 })
 
 );
 
 mountain.position.set(
-(Math.random()-0.5)*900,
-20,
-(Math.random()-0.5)*900
+Math.random()*1500-750,
+30,
+Math.random()*1500-750
 );
-
-mountain.castShadow = true;
 
 scene.add(mountain);
 
@@ -240,61 +309,9 @@ scene.add(mountain);
 
 
 
-
-
-// ======================
-// 木
-// ======================
-
-for(let i=0;i<500;i++){
-
-const tree = new THREE.Group();
-
-const trunk = new THREE.Mesh(
-
-new THREE.CylinderGeometry(0.5,0.8,5),
-
-new THREE.MeshStandardMaterial({
-color:0x8b4513
-})
-
-);
-
-trunk.position.y = 2.5;
-
-tree.add(trunk);
-
-const leaves = new THREE.Mesh(
-
-new THREE.SphereGeometry(3),
-
-new THREE.MeshStandardMaterial({
-color:0x228b22
-})
-
-);
-
-leaves.position.y = 6;
-
-tree.add(leaves);
-
-tree.position.set(
-(Math.random()-0.5)*950,
-0,
-(Math.random()-0.5)*950
-);
-
-scene.add(tree);
-
-}
-
-
-
-
-
-// ======================
+// ====================
 // プレイヤー
-// ======================
+// ====================
 
 const player = new THREE.Group();
 
@@ -303,7 +320,7 @@ const body = new THREE.Mesh(
 new THREE.CapsuleGeometry(0.8,2,4,8),
 
 new THREE.MeshStandardMaterial({
-color:0x3366ff
+color:0x3399ff
 })
 
 );
@@ -318,7 +335,7 @@ new THREE.BoxGeometry(0.15,2,0.3),
 
 new THREE.MeshStandardMaterial({
 color:0xdddddd,
-emissive:0x444444
+emissive:0x555555
 })
 
 );
@@ -333,10 +350,71 @@ scene.add(player);
 
 
 
+// ====================
+// 視点
+// ====================
 
-// ======================
+document.body.requestPointerLock =
+document.body.requestPointerLock ||
+document.body.mozRequestPointerLock;
+
+document.addEventListener("click",()=>{
+
+document.body.requestPointerLock();
+
+});
+
+let yaw = 0;
+let pitch = 0;
+
+document.addEventListener("mousemove",(e)=>{
+
+if(document.pointerLockElement===document.body){
+
+yaw -= e.movementX * 0.002;
+
+pitch -= e.movementY * 0.002;
+
+pitch = Math.max(
+-Math.PI/2,
+Math.min(Math.PI/2,pitch)
+);
+
+camera.rotation.order = "YXZ";
+
+camera.rotation.y = yaw;
+
+camera.rotation.x = pitch;
+
+}
+
+});
+
+
+
+// ====================
+// 入力
+// ====================
+
+const keys = {};
+
+document.addEventListener("keydown",(e)=>{
+
+keys[e.key.toLowerCase()] = true;
+
+});
+
+document.addEventListener("keyup",(e)=>{
+
+keys[e.key.toLowerCase()] = false;
+
+});
+
+
+
+// ====================
 // ステータス
-// ======================
+// ====================
 
 let hp = 100;
 let stamina = 100;
@@ -347,22 +425,11 @@ let coins = 0;
 let velocityY = 0;
 let onGround = false;
 
-const keys = {};
-
-document.addEventListener("keydown",e=>{
-keys[e.key.toLowerCase()] = true;
-});
-
-document.addEventListener("keyup",e=>{
-keys[e.key.toLowerCase()] = false;
-});
 
 
-
-
-// ======================
+// ====================
 // 敵
-// ======================
+// ====================
 
 const enemies = [];
 
@@ -370,25 +437,21 @@ function createEnemy(){
 
 const enemy = new THREE.Mesh(
 
-new THREE.BoxGeometry(2,2,2),
+new THREE.BoxGeometry(2,3,2),
 
 new THREE.MeshStandardMaterial({
-color:0xff3333
+color:0xaa0000
 })
 
 );
 
 enemy.position.set(
-(Math.random()-0.5)*300,
-1,
-(Math.random()-0.5)*300
+Math.random()*300-150,
+2,
+Math.random()*300-150
 );
 
 enemy.hp = 5;
-
-enemy.speed = 0.02 + Math.random()*0.02;
-
-enemy.castShadow = true;
 
 scene.add(enemy);
 
@@ -396,23 +459,21 @@ enemies.push(enemy);
 
 }
 
-for(let i=0;i<25;i++){
+for(let i=0;i<20;i++){
 createEnemy();
 }
 
 
 
-
-
-// ======================
+// ====================
 // パーティクル
-// ======================
+// ====================
 
 const particles = [];
 
-function particleBurst(x,y,z,color,count=20){
+function burst(x,y,z,color){
 
-for(let i=0;i<count;i++){
+for(let i=0;i<20;i++){
 
 const p = new THREE.Mesh(
 
@@ -426,9 +487,9 @@ color:color
 
 p.position.set(x,y,z);
 
-p.vx = (Math.random()-0.5)*0.5;
-p.vy = Math.random()*0.5;
-p.vz = (Math.random()-0.5)*0.5;
+p.vx = Math.random()-0.5;
+p.vy = Math.random();
+p.vz = Math.random()-0.5;
 
 scene.add(p);
 
@@ -440,11 +501,83 @@ particles.push(p);
 
 
 
+// ====================
+// 攻撃
+// ====================
+
+let attacking = false;
+
+document.addEventListener("mousedown",()=>{
+
+attacking = true;
+
+setTimeout(()=>{
+attacking = false;
+},200);
+
+enemies.forEach((enemy,index)=>{
+
+const dist = enemy.position.distanceTo(camera.position);
+
+if(dist < 5){
+
+enemy.hp--;
+
+burst(
+enemy.position.x,
+enemy.position.y,
+enemy.position.z,
+0xff0000
+);
+
+enemy.position.x +=
+(enemy.position.x-camera.position.x)*0.2;
+
+enemy.position.z +=
+(enemy.position.z-camera.position.z)*0.2;
+
+if(enemy.hp<=0){
+
+burst(
+enemy.position.x,
+enemy.position.y,
+enemy.position.z,
+0xffff00
+);
+
+scene.remove(enemy);
+
+enemies.splice(index,1);
+
+coins += 10;
+
+exp += 20;
+
+if(exp>=100){
+
+exp=0;
+
+level++;
+
+hp=100;
+
+}
+
+createEnemy();
+
+}
+
+}
+
+});
+
+});
 
 
-// ======================
+
+// ====================
 // 魔法
-// ======================
+// ====================
 
 const magicBalls = [];
 
@@ -460,9 +593,7 @@ color:color
 
 );
 
-ball.position.copy(player.position);
-
-ball.position.y += 1;
+ball.position.copy(camera.position);
 
 ball.dir = new THREE.Vector3(0,0,-1);
 
@@ -476,15 +607,15 @@ magicBalls.push(ball);
 
 document.addEventListener("keydown",(e)=>{
 
-if(e.key === "1"){
+if(e.key==="1"){
 castMagic(0xff5500);
 }
 
-if(e.key === "2"){
-castMagic(0x00ccff);
+if(e.key==="2"){
+castMagic(0x00ffff);
 }
 
-if(e.key === "3"){
+if(e.key==="3"){
 castMagic(0xaa00ff);
 }
 
@@ -492,38 +623,9 @@ castMagic(0xaa00ff);
 
 
 
-
-// ======================
-// 攻撃
-// ======================
-
-let attacking = false;
-
-document.addEventListener("mousedown",()=>{
-
-attacking = true;
-
-setTimeout(()=>{
-attacking = false;
-},250);
-
-});
-
-
-
-
-// ======================
-// カメラ
-// ======================
-
-camera.position.set(0,7,12);
-
-
-
-
-// ======================
+// ====================
 // アニメーション
-// ======================
+// ====================
 
 function animate(){
 
@@ -531,12 +633,11 @@ requestAnimationFrame(animate);
 
 
 
-
 // 移動
 
 let speed = 0.18;
 
-if(keys["shift"] && stamina > 0){
+if(keys["shift"] && stamina>0){
 
 speed = 0.35;
 
@@ -544,17 +645,43 @@ stamina -= 0.4;
 
 }else{
 
-stamina += 0.25;
+stamina += 0.2;
 
 }
 
-if(stamina > 100) stamina = 100;
+stamina = Math.max(0,Math.min(100,stamina));
 
-if(keys["w"]) player.position.z -= speed;
-if(keys["s"]) player.position.z += speed;
-if(keys["a"]) player.position.x -= speed;
-if(keys["d"]) player.position.x += speed;
+if(keys["w"]){
 
+camera.position.x -= Math.sin(yaw)*speed;
+
+camera.position.z -= Math.cos(yaw)*speed;
+
+}
+
+if(keys["s"]){
+
+camera.position.x += Math.sin(yaw)*speed;
+
+camera.position.z += Math.cos(yaw)*speed;
+
+}
+
+if(keys["a"]){
+
+camera.position.x -= Math.cos(yaw)*speed;
+
+camera.position.z += Math.sin(yaw)*speed;
+
+}
+
+if(keys["d"]){
+
+camera.position.x += Math.cos(yaw)*speed;
+
+camera.position.z -= Math.sin(yaw)*speed;
+
+}
 
 
 
@@ -562,18 +689,19 @@ if(keys["d"]) player.position.x += speed;
 
 if(keys[" "] && onGround){
 
-velocityY = 0.45;
+velocityY = 0.4;
+
 onGround = false;
 
 }
 
 velocityY -= 0.02;
 
-player.position.y += velocityY;
+camera.position.y += velocityY;
 
-if(player.position.y <= 3){
+if(camera.position.y < 5){
 
-player.position.y = 3;
+camera.position.y = 5;
 
 velocityY = 0;
 
@@ -583,23 +711,11 @@ onGround = true;
 
 
 
+// プレイヤー同期
 
-// カメラ
+player.position.copy(camera.position);
 
-camera.position.x += (
-player.position.x - camera.position.x
-)*0.08;
-
-camera.position.z += (
-player.position.z + 12 - camera.position.z
-)*0.08;
-
-camera.position.y += (
-player.position.y + 6 - camera.position.y
-)*0.08;
-
-camera.lookAt(player.position);
-
+player.position.y -= 2;
 
 
 
@@ -607,7 +723,8 @@ camera.lookAt(player.position);
 
 if(attacking){
 
-sword.rotation.z = -Math.sin(Date.now()*0.04)*2.8;
+sword.rotation.z =
+-Math.sin(Date.now()*0.05)*2.5;
 
 }else{
 
@@ -617,87 +734,24 @@ sword.rotation.z = 0;
 
 
 
-
 // 敵AI
 
-enemies.forEach((enemy,index)=>{
+enemies.forEach(enemy=>{
 
-const dx = player.position.x - enemy.position.x;
-const dz = player.position.z - enemy.position.z;
+enemy.lookAt(camera.position);
 
-const dist = Math.sqrt(dx*dx+dz*dz);
+const dir = new THREE.Vector3();
 
+dir.subVectors(
+camera.position,
+enemy.position
+).normalize();
 
-
-
-// 追尾
-
-if(dist < 60){
-
-enemy.position.x += dx*enemy.speed*0.03;
-enemy.position.z += dz*enemy.speed*0.03;
-
-}
-
-
-
-
-// プレイヤー攻撃
-
-if(attacking && dist < 4){
-
-enemy.hp--;
-
-particleBurst(
-enemy.position.x,
-enemy.position.y,
-enemy.position.z,
-0xff0000
+enemy.position.add(
+dir.multiplyScalar(0.03)
 );
 
-enemy.position.x += dx*-0.3;
-enemy.position.z += dz*-0.3;
-
-if(enemy.hp <= 0){
-
-particleBurst(
-enemy.position.x,
-enemy.position.y,
-enemy.position.z,
-0xffff00,
-40
-);
-
-scene.remove(enemy);
-
-enemies.splice(index,1);
-
-coins += 10;
-
-exp += 20;
-
-if(exp >= 100){
-
-exp = 0;
-
-level++;
-
-hp = 100;
-
-}
-
-createEnemy();
-
-}
-
-}
-
-
-
-
-// 敵ダメージ
-
-if(dist < 2){
+if(enemy.position.distanceTo(camera.position)<2){
 
 hp -= 0.05;
 
@@ -707,8 +761,7 @@ hp -= 0.05;
 
 
 
-
-// 魔法更新
+// 魔法
 
 magicBalls.forEach((ball,index)=>{
 
@@ -720,23 +773,22 @@ enemies.forEach((enemy,eIndex)=>{
 
 const d = ball.position.distanceTo(enemy.position);
 
-if(d < 2){
+if(d<2){
 
 enemy.hp -= 3;
 
-particleBurst(
+burst(
 enemy.position.x,
 enemy.position.y,
 enemy.position.z,
-0x00ffff,
-30
+0x00ffff
 );
 
 scene.remove(ball);
 
 magicBalls.splice(index,1);
 
-if(enemy.hp <= 0){
+if(enemy.hp<=0){
 
 scene.remove(enemy);
 
@@ -758,20 +810,19 @@ createEnemy();
 
 
 
-
 // パーティクル
 
 particles.forEach((p,index)=>{
 
-p.position.x += p.vx;
-p.position.y += p.vy;
-p.position.z += p.vz;
+p.position.x += p.vx*0.1;
+p.position.y += p.vy*0.1;
+p.position.z += p.vz*0.1;
 
-p.vy -= 0.02;
+p.vy -= 0.01;
 
-p.scale.multiplyScalar(0.95);
+p.scale.multiplyScalar(0.96);
 
-if(p.scale.x < 0.03){
+if(p.scale.x<0.02){
 
 scene.remove(p);
 
@@ -780,7 +831,6 @@ particles.splice(index,1);
 }
 
 });
-
 
 
 
@@ -797,26 +847,27 @@ document.getElementById("expFill")
 
 document.getElementById("text").innerHTML =
 
-"Level: " + level +
-"<br>Coins: " + coins +
-"<br>Enemies: " + enemies.length +
-"<br><br>1 炎魔法" +
-"<br>2 氷魔法" +
-"<br>3 雷魔法";
+`
+LEVEL: ${level}<br>
+COINS: ${coins}<br>
+ENEMIES: ${enemies.length}<br><br>
 
+1 炎魔法<br>
+2 氷魔法<br>
+3 雷魔法
+`;
 
 
 
 // GAME OVER
 
-if(hp <= 0){
+if(hp<=0){
 
 alert("GAME OVER");
 
 location.reload();
 
 }
-
 
 
 
@@ -830,283 +881,3 @@ animate();
 
 </body>
 </html>
-// ======================
-// DASH
-// ======================
-
-let stamina = 100;
-let sprint = false;
-
-document.addEventListener("keydown",(e)=>{
-    if(e.key==="Shift"){
-        sprint=true;
-    }
-});
-
-document.addEventListener("keyup",(e)=>{
-    if(e.key==="Shift"){
-        sprint=false;
-    }
-});
-
-// ======================
-// PLAYER STATUS
-// ======================
-
-let level = 1;
-let exp = 0;
-
-// UI
-const ui = document.createElement("div");
-
-ui.style.position="absolute";
-ui.style.top="10px";
-ui.style.left="10px";
-ui.style.color="white";
-ui.style.fontSize="20px";
-ui.style.fontFamily="sans-serif";
-ui.style.zIndex="100";
-
-document.body.appendChild(ui);
-
-// ======================
-// DAMAGE TEXT
-// ======================
-
-function damageText(x,y,z,text){
-
-    const div=document.createElement("div");
-
-    div.innerHTML=text;
-
-    div.style.position="absolute";
-    div.style.color="red";
-    div.style.fontSize="30px";
-    div.style.fontWeight="bold";
-
-    document.body.appendChild(div);
-
-    let t=0;
-
-    function anim(){
-
-        t++;
-
-        div.style.left=(window.innerWidth/2+Math.random()*100-50)+"px";
-        div.style.top=(window.innerHeight/2-t*2)+"px";
-
-        if(t<60){
-            requestAnimationFrame(anim);
-        }else{
-            div.remove();
-        }
-    }
-
-    anim();
-}
-
-// ======================
-// ENEMY SYSTEM
-// ======================
-
-const enemies=[];
-
-function createEnemy(x,z){
-
-    const geo=new THREE.BoxGeometry(2,4,2);
-
-    const mat=new THREE.MeshStandardMaterial({
-        color:0xaa0000
-    });
-
-    const enemy=new THREE.Mesh(geo,mat);
-
-    enemy.position.set(x,2,z);
-
-    enemy.hp=100;
-
-    scene.add(enemy);
-
-    enemies.push(enemy);
-}
-
-for(let i=0;i<15;i++){
-
-    createEnemy(
-        Math.random()*200-100,
-        Math.random()*200-100
-    );
-}
-
-// ======================
-// ATTACK
-// ======================
-
-let attack=false;
-
-document.addEventListener("mousedown",()=>{
-
-    attack=true;
-
-    enemies.forEach(enemy=>{
-
-        const d=enemy.position.distanceTo(camera.position);
-
-        if(d<6){
-
-            enemy.hp-=25;
-
-            damageText(
-                enemy.position.x,
-                enemy.position.y,
-                enemy.position.z,
-                "25"
-            );
-
-            enemy.material.color.set(0xffffff);
-
-            setTimeout(()=>{
-                enemy.material.color.set(0xaa0000);
-            },100);
-
-            if(enemy.hp<=0){
-
-                scene.remove(enemy);
-
-                exp+=20;
-
-                if(exp>=100){
-
-                    exp=0;
-                    level++;
-
-                    alert("LEVEL UP!");
-                }
-            }
-        }
-    });
-
-    setTimeout(()=>{
-        attack=false;
-    },200);
-});
-
-// ======================
-// TREES
-// ======================
-
-for(let i=0;i<80;i++){
-
-    const trunk=new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5,0.5,5),
-        new THREE.MeshStandardMaterial({color:0x663300})
-    );
-
-    trunk.position.set(
-        Math.random()*400-200,
-        2.5,
-        Math.random()*400-200
-    );
-
-    scene.add(trunk);
-
-    const leaves=new THREE.Mesh(
-        new THREE.SphereGeometry(3),
-        new THREE.MeshStandardMaterial({color:0x00aa00})
-    );
-
-    leaves.position.set(
-        trunk.position.x,
-        trunk.position.y+4,
-        trunk.position.z
-    );
-
-    scene.add(leaves);
-}
-
-// ======================
-// SKY
-// ======================
-
-scene.background=new THREE.Color(0x001133);
-
-// ======================
-// STARS
-// ======================
-
-for(let i=0;i<500;i++){
-
-    const star=new THREE.Mesh(
-
-        new THREE.SphereGeometry(0.2),
-
-        new THREE.MeshBasicMaterial({
-            color:0xffffff
-        })
-    );
-
-    star.position.set(
-        Math.random()*1000-500,
-        Math.random()*500,
-        Math.random()*1000-500
-    );
-
-    scene.add(star);
-}
-
-// ======================
-// UPDATE LOOP
-// ======================
-
-function updateGame(){
-
-    requestAnimationFrame(updateGame);
-
-    let speed=0.15;
-
-    if(sprint && stamina>0){
-
-        speed=0.35;
-
-        stamina-=0.5;
-
-    }else{
-
-        stamina+=0.2;
-    }
-
-    stamina=Math.max(0,Math.min(100,stamina));
-
-    enemies.forEach(enemy=>{
-
-        enemy.lookAt(camera.position);
-
-        const dir=new THREE.Vector3();
-
-        dir.subVectors(
-            camera.position,
-            enemy.position
-        ).normalize();
-
-        enemy.position.add(
-            dir.multiplyScalar(0.03)
-        );
-
-        if(enemy.position.distanceTo(camera.position)<2){
-
-            hp-=0.1;
-        }
-    });
-
-    ui.innerHTML=
-    `
-    HP: ${Math.floor(hp)}<br>
-    STAMINA: ${Math.floor(stamina)}<br>
-    LEVEL: ${level}<br>
-    EXP: ${exp}/100
-    `;
-
-    renderer.render(scene,camera);
-}
-
-updateGame();
