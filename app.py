@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ULTIMATE ANIME RPG</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+    font-family:sans-serif;
+}
+
+canvas{
+    display:block;
+}
+
+#ui{
+    position:absolute;
+    top:15px;
+    left:15px;
+    color:white;
+    z-index:100;
+    background:rgba(0,0,0,0.5);
+    padding:15px;
+    border-radius:15px;
+    width:260px;
+    backdrop-filter:blur(8px);
+}
+
+.bar{
+    width:200px;
+    height:18px;
+    background:#333;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:10px;
+}
+
+.fill{
+    height:100%;
+    width:100%;
+}
+
+#hpFill{
+    background:#ff4444;
+}
+
+#staminaFill{
+    background:#44ff88;
+}
+
+#expFill{
+    background:#44aaff;
+}
+
+#crosshair{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    color:white;
+    font-size:25px;
+    z-index:100;
+}
+
+#skills{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:20px;
+    z-index:100;
+}
+
+.skill{
+    width:70px;
+    height:70px;
+    background:rgba(255,255,255,0.1);
+    border:2px solid white;
+    border-radius:20px;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    backdrop-filter:blur(8px);
+}
+</style>
+</head>
+
+<body>
+
+<div id="crosshair">+</div>
+
+<div id="ui">
+
+<div>HP</div>
+<div class="bar">
+<div class="fill" id="hpFill"></div>
+</div>
+
+<div>STAMINA</div>
+<div class="bar">
+<div class="fill" id="staminaFill"></div>
+</div>
+
+<div>EXP</div>
+<div class="bar">
+<div class="fill" id="expFill"></div>
+</div>
+
+<div id="text">
+Level: 1<br>
+Coins: 0<br>
+Enemies: 25
+</div>
+
+</div>
+
+<div id="skills">
+<div class="skill">⚔️</div>
+<div class="skill">🔥</div>
+<div class="skill">⚡</div>
+<div class="skill">❄️</div>
+</div>
+
+<script type="module">
+
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152/build/three.module.js';
+
+
+
+
+
+// ======================
+// 基本
+// ======================
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x87ceeb);
+
+scene.fog = new THREE.Fog(0x87ceeb,80,300);
+
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+2000
+);
+
+const renderer = new THREE.WebGLRenderer({
+antialias:true
+});
+
+renderer.setSize(window.innerWidth,window.innerHeight);
+
+renderer.shadowMap.enabled = true;
+
+document.body.appendChild(renderer.domElement);
+
+
+
+
+// ======================
+// 光
+// ======================
+
+const sun = new THREE.DirectionalLight(0xffffff,2);
+
+sun.position.set(50,100,50);
+
+sun.castShadow = true;
+
+scene.add(sun);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+
+
+
+
+// ======================
+// 地面
+// ======================
+
+const ground = new THREE.Mesh(
+
+new THREE.PlaneGeometry(1000,1000),
+
+new THREE.MeshStandardMaterial({
+color:0x3fa34d
+})
+
+);
+
+ground.rotation.x = -Math.PI/2;
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+
+
+
+// ======================
+// 山
+// ======================
+
+for(let i=0;i<70;i++){
+
+const mountain = new THREE.Mesh(
+
+new THREE.ConeGeometry(
+10+Math.random()*20,
+40+Math.random()*100,
+6
+),
+
+new THREE.MeshStandardMaterial({
+color:0x666666
+})
+
+);
+
+mountain.position.set(
+(Math.random()-0.5)*900,
+20,
+(Math.random()-0.5)*900
+);
+
+mountain.castShadow = true;
+
+scene.add(mountain);
+
+}
+
+
+
+
+
+// ======================
+// 木
+// ======================
+
+for(let i=0;i<500;i++){
+
+const tree = new THREE.Group();
+
+const trunk = new THREE.Mesh(
+
+new THREE.CylinderGeometry(0.5,0.8,5),
+
+new THREE.MeshStandardMaterial({
+color:0x8b4513
+})
+
+);
+
+trunk.position.y = 2.5;
+
+tree.add(trunk);
+
+const leaves = new THREE.Mesh(
+
+new THREE.SphereGeometry(3),
+
+new THREE.MeshStandardMaterial({
+color:0x228b22
+})
+
+);
+
+leaves.position.y = 6;
+
+tree.add(leaves);
+
+tree.position.set(
+(Math.random()-0.5)*950,
+0,
+(Math.random()-0.5)*950
+);
+
+scene.add(tree);
+
+}
+
+
+
+
+
+// ======================
+// プレイヤー
+// ======================
+
+const player = new THREE.Group();
+
+const body = new THREE.Mesh(
+
+new THREE.CapsuleGeometry(0.8,2,4,8),
+
+new THREE.MeshStandardMaterial({
+color:0x3366ff
+})
+
+);
+
+body.castShadow = true;
+
+player.add(body);
+
+const sword = new THREE.Mesh(
+
+new THREE.BoxGeometry(0.15,2,0.3),
+
+new THREE.MeshStandardMaterial({
+color:0xdddddd,
+emissive:0x444444
+})
+
+);
+
+sword.position.set(1,0.5,0);
+
+player.add(sword);
+
+player.position.y = 3;
+
+scene.add(player);
+
+
+
+
+// ======================
+// ステータス
+// ======================
+
+let hp = 100;
+let stamina = 100;
+let exp = 0;
+let level = 1;
+let coins = 0;
+
+let velocityY = 0;
+let onGround = false;
+
+const keys = {};
+
+document.addEventListener("keydown",e=>{
+keys[e.key.toLowerCase()] = true;
+});
+
+document.addEventListener("keyup",e=>{
+keys[e.key.toLowerCase()] = false;
+});
+
+
+
+
+// ======================
+// 敵
+// ======================
+
+const enemies = [];
+
+function createEnemy(){
+
+const enemy = new THREE.Mesh(
+
+new THREE.BoxGeometry(2,2,2),
+
+new THREE.MeshStandardMaterial({
+color:0xff3333
+})
+
+);
+
+enemy.position.set(
+(Math.random()-0.5)*300,
+1,
+(Math.random()-0.5)*300
+);
+
+enemy.hp = 5;
+
+enemy.speed = 0.02 + Math.random()*0.02;
+
+enemy.castShadow = true;
+
+scene.add(enemy);
+
+enemies.push(enemy);
+
+}
+
+for(let i=0;i<25;i++){
+createEnemy();
+}
+
+
+
+
+
+// ======================
+// パーティクル
+// ======================
+
+const particles = [];
+
+function particleBurst(x,y,z,color,count=20){
+
+for(let i=0;i<count;i++){
+
+const p = new THREE.Mesh(
+
+new THREE.SphereGeometry(0.08),
+
+new THREE.MeshBasicMaterial({
+color:color
+})
+
+);
+
+p.position.set(x,y,z);
+
+p.vx = (Math.random()-0.5)*0.5;
+p.vy = Math.random()*0.5;
+p.vz = (Math.random()-0.5)*0.5;
+
+scene.add(p);
+
+particles.push(p);
+
+}
+
+}
+
+
+
+
+
+// ======================
+// 魔法
+// ======================
+
+const magicBalls = [];
+
+function castMagic(color){
+
+const ball = new THREE.Mesh(
+
+new THREE.SphereGeometry(0.5),
+
+new THREE.MeshBasicMaterial({
+color:color
+})
+
+);
+
+ball.position.copy(player.position);
+
+ball.position.y += 1;
+
+ball.dir = new THREE.Vector3(0,0,-1);
+
+ball.dir.applyQuaternion(camera.quaternion);
+
+scene.add(ball);
+
+magicBalls.push(ball);
+
+}
+
+document.addEventListener("keydown",(e)=>{
+
+if(e.key === "1"){
+castMagic(0xff5500);
+}
+
+if(e.key === "2"){
+castMagic(0x00ccff);
+}
+
+if(e.key === "3"){
+castMagic(0xaa00ff);
+}
+
+});
+
+
+
+
+// ======================
+// 攻撃
+// ======================
+
+let attacking = false;
+
+document.addEventListener("mousedown",()=>{
+
+attacking = true;
+
+setTimeout(()=>{
+attacking = false;
+},250);
+
+});
+
+
+
+
+// ======================
+// カメラ
+// ======================
+
+camera.position.set(0,7,12);
+
+
+
+
+// ======================
+// アニメーション
+// ======================
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+
+
+
+// 移動
+
+let speed = 0.18;
+
+if(keys["shift"] && stamina > 0){
+
+speed = 0.35;
+
+stamina -= 0.4;
+
+}else{
+
+stamina += 0.25;
+
+}
+
+if(stamina > 100) stamina = 100;
+
+if(keys["w"]) player.position.z -= speed;
+if(keys["s"]) player.position.z += speed;
+if(keys["a"]) player.position.x -= speed;
+if(keys["d"]) player.position.x += speed;
+
+
+
+
+// ジャンプ
+
+if(keys[" "] && onGround){
+
+velocityY = 0.45;
+onGround = false;
+
+}
+
+velocityY -= 0.02;
+
+player.position.y += velocityY;
+
+if(player.position.y <= 3){
+
+player.position.y = 3;
+
+velocityY = 0;
+
+onGround = true;
+
+}
+
+
+
+
+// カメラ
+
+camera.position.x += (
+player.position.x - camera.position.x
+)*0.08;
+
+camera.position.z += (
+player.position.z + 12 - camera.position.z
+)*0.08;
+
+camera.position.y += (
+player.position.y + 6 - camera.position.y
+)*0.08;
+
+camera.lookAt(player.position);
+
+
+
+
+// 剣アニメ
+
+if(attacking){
+
+sword.rotation.z = -Math.sin(Date.now()*0.04)*2.8;
+
+}else{
+
+sword.rotation.z = 0;
+
+}
+
+
+
+
+// 敵AI
+
+enemies.forEach((enemy,index)=>{
+
+const dx = player.position.x - enemy.position.x;
+const dz = player.position.z - enemy.position.z;
+
+const dist = Math.sqrt(dx*dx+dz*dz);
+
+
+
+
+// 追尾
+
+if(dist < 60){
+
+enemy.position.x += dx*enemy.speed*0.03;
+enemy.position.z += dz*enemy.speed*0.03;
+
+}
+
+
+
+
+// プレイヤー攻撃
+
+if(attacking && dist < 4){
+
+enemy.hp--;
+
+particleBurst(
+enemy.position.x,
+enemy.position.y,
+enemy.position.z,
+0xff0000
+);
+
+enemy.position.x += dx*-0.3;
+enemy.position.z += dz*-0.3;
+
+if(enemy.hp <= 0){
+
+particleBurst(
+enemy.position.x,
+enemy.position.y,
+enemy.position.z,
+0xffff00,
+40
+);
+
+scene.remove(enemy);
+
+enemies.splice(index,1);
+
+coins += 10;
+
+exp += 20;
+
+if(exp >= 100){
+
+exp = 0;
+
+level++;
+
+hp = 100;
+
+}
+
+createEnemy();
+
+}
+
+}
+
+
+
+
+// 敵ダメージ
+
+if(dist < 2){
+
+hp -= 0.05;
+
+}
+
+});
+
+
+
+
+// 魔法更新
+
+magicBalls.forEach((ball,index)=>{
+
+ball.position.add(
+ball.dir.clone().multiplyScalar(1)
+);
+
+enemies.forEach((enemy,eIndex)=>{
+
+const d = ball.position.distanceTo(enemy.position);
+
+if(d < 2){
+
+enemy.hp -= 3;
+
+particleBurst(
+enemy.position.x,
+enemy.position.y,
+enemy.position.z,
+0x00ffff,
+30
+);
+
+scene.remove(ball);
+
+magicBalls.splice(index,1);
+
+if(enemy.hp <= 0){
+
+scene.remove(enemy);
+
+enemies.splice(eIndex,1);
+
+coins += 20;
+
+exp += 30;
+
+createEnemy();
+
+}
+
+}
+
+});
+
+});
+
+
+
+
+// パーティクル
+
+particles.forEach((p,index)=>{
+
+p.position.x += p.vx;
+p.position.y += p.vy;
+p.position.z += p.vz;
+
+p.vy -= 0.02;
+
+p.scale.multiplyScalar(0.95);
+
+if(p.scale.x < 0.03){
+
+scene.remove(p);
+
+particles.splice(index,1);
+
+}
+
+});
+
+
+
+
+// UI
+
+document.getElementById("hpFill")
+.style.width = hp + "%";
+
+document.getElementById("staminaFill")
+.style.width = stamina + "%";
+
+document.getElementById("expFill")
+.style.width = exp + "%";
+
+document.getElementById("text").innerHTML =
+
+"Level: " + level +
+"<br>Coins: " + coins +
+"<br>Enemies: " + enemies.length +
+"<br><br>1 炎魔法" +
+"<br>2 氷魔法" +
+"<br>3 雷魔法";
+
+
+
+
+// GAME OVER
+
+if(hp <= 0){
+
+alert("GAME OVER");
+
+location.reload();
+
+}
+
+
+
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
