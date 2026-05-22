@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate RPG</title>
+<title>ULTIMATE OPEN WORLD RPG</title>
 
 <style>
 
@@ -21,17 +21,17 @@ canvas{
     position:absolute;
     top:10px;
     left:10px;
-    color:white;
-    z-index:100;
+    width:280px;
     background:rgba(0,0,0,0.5);
     padding:15px;
-    border-radius:15px;
-    width:250px;
+    border-radius:20px;
+    color:white;
+    z-index:100;
     backdrop-filter:blur(10px);
 }
 
 .bar{
-    width:220px;
+    width:240px;
     height:18px;
     background:#222;
     border-radius:20px;
@@ -41,20 +41,11 @@ canvas{
 
 .fill{
     height:100%;
-    width:100%;
 }
 
-#hpFill{
-    background:#ff4444;
-}
-
-#staminaFill{
-    background:#44ff88;
-}
-
-#expFill{
-    background:#44aaff;
-}
+#hp{background:#ff4444;width:100%;}
+#stamina{background:#44ff88;width:100%;}
+#mana{background:#4499ff;width:100%;}
 
 #crosshair{
     position:absolute;
@@ -82,10 +73,10 @@ canvas{
     border-radius:20px;
     border:2px solid white;
     background:rgba(255,255,255,0.1);
-    color:white;
     display:flex;
     align-items:center;
     justify-content:center;
+    color:white;
     font-size:30px;
     backdrop-filter:blur(10px);
 }
@@ -99,25 +90,19 @@ canvas{
 
 <div id="ui">
 
-<div>HP</div>
-<div class="bar">
-<div class="fill" id="hpFill"></div>
-</div>
+HP
+<div class="bar"><div class="fill" id="hp"></div></div>
 
-<div>STAMINA</div>
-<div class="bar">
-<div class="fill" id="staminaFill"></div>
-</div>
+STAMINA
+<div class="bar"><div class="fill" id="stamina"></div></div>
 
-<div>EXP</div>
-<div class="bar">
-<div class="fill" id="expFill"></div>
-</div>
+MANA
+<div class="bar"><div class="fill" id="mana"></div></div>
 
-<div id="text">
-LEVEL: 1<br>
-COINS: 0<br>
-ENEMIES: 20
+<div id="stats">
+LEVEL 1<br>
+COINS 0<br>
+ENEMIES 25
 </div>
 
 </div>
@@ -134,21 +119,23 @@ ENEMIES: 20
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152/build/three.module.js';
 
 
-// ====================
+
+
+// =====================================
 // 基本
-// ====================
+// =====================================
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x001133);
+scene.background = new THREE.Color(0x000814);
 
-scene.fog = new THREE.Fog(0x001133,80,300);
+scene.fog = new THREE.Fog(0x000814,100,500);
 
 const camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
-2000
+3000
 );
 
 const renderer = new THREE.WebGLRenderer({
@@ -163,17 +150,18 @@ document.body.appendChild(renderer.domElement);
 
 
 
-// ====================
+
+// =====================================
 // ライト
-// ====================
+// =====================================
 
 const ambient = new THREE.AmbientLight(0xffffff,0.7);
 
 scene.add(ambient);
 
-const moon = new THREE.DirectionalLight(0xffffff,1.5);
+const moon = new THREE.DirectionalLight(0xaaccff,2);
 
-moon.position.set(50,100,50);
+moon.position.set(100,200,100);
 
 moon.castShadow = true;
 
@@ -181,16 +169,17 @@ scene.add(moon);
 
 
 
-// ====================
+
+// =====================================
 // 地面
-// ====================
+// =====================================
 
 const ground = new THREE.Mesh(
 
-new THREE.PlaneGeometry(1000,1000),
+new THREE.PlaneGeometry(3000,3000),
 
 new THREE.MeshStandardMaterial({
-color:0x226622
+color:0x224422
 })
 
 );
@@ -203,15 +192,16 @@ scene.add(ground);
 
 
 
-// ====================
-// 星
-// ====================
 
-for(let i=0;i<1000;i++){
+// =====================================
+// 星空
+// =====================================
+
+for(let i=0;i<2000;i++){
 
 const star = new THREE.Mesh(
 
-new THREE.SphereGeometry(0.15),
+new THREE.SphereGeometry(0.2),
 
 new THREE.MeshBasicMaterial({
 color:0xffffff
@@ -220,9 +210,9 @@ color:0xffffff
 );
 
 star.position.set(
-Math.random()*2000-1000,
-Math.random()*800,
-Math.random()*2000-1000
+Math.random()*4000-2000,
+Math.random()*1000,
+Math.random()*4000-2000
 );
 
 scene.add(star);
@@ -231,15 +221,16 @@ scene.add(star);
 
 
 
-// ====================
-// 木
-// ====================
 
-for(let i=0;i<200;i++){
+// =====================================
+// 木
+// =====================================
+
+for(let i=0;i<300;i++){
 
 const trunk = new THREE.Mesh(
 
-new THREE.CylinderGeometry(0.5,0.7,6),
+new THREE.CylinderGeometry(0.5,0.7,7),
 
 new THREE.MeshStandardMaterial({
 color:0x663300
@@ -248,16 +239,16 @@ color:0x663300
 );
 
 trunk.position.set(
-Math.random()*900-450,
+Math.random()*2500-1250,
 3,
-Math.random()*900-450
+Math.random()*2500-1250
 );
 
 scene.add(trunk);
 
 const leaves = new THREE.Mesh(
 
-new THREE.SphereGeometry(3),
+new THREE.SphereGeometry(4),
 
 new THREE.MeshStandardMaterial({
 color:0x00aa00
@@ -267,7 +258,7 @@ color:0x00aa00
 
 leaves.position.set(
 trunk.position.x,
-trunk.position.y+5,
+trunk.position.y+6,
 trunk.position.z
 );
 
@@ -277,17 +268,18 @@ scene.add(leaves);
 
 
 
-// ====================
-// 山
-// ====================
 
-for(let i=0;i<40;i++){
+// =====================================
+// 山
+// =====================================
+
+for(let i=0;i<60;i++){
 
 const mountain = new THREE.Mesh(
 
 new THREE.ConeGeometry(
-10+Math.random()*20,
-50+Math.random()*100,
+20+Math.random()*40,
+100+Math.random()*200,
 6
 ),
 
@@ -298,9 +290,9 @@ color:0x555555
 );
 
 mountain.position.set(
-Math.random()*1500-750,
-30,
-Math.random()*1500-750
+Math.random()*3000-1500,
+50,
+Math.random()*3000-1500
 );
 
 scene.add(mountain);
@@ -309,50 +301,10 @@ scene.add(mountain);
 
 
 
-// ====================
-// プレイヤー
-// ====================
 
-const player = new THREE.Group();
-
-const body = new THREE.Mesh(
-
-new THREE.CapsuleGeometry(0.8,2,4,8),
-
-new THREE.MeshStandardMaterial({
-color:0x3399ff
-})
-
-);
-
-body.castShadow = true;
-
-player.add(body);
-
-const sword = new THREE.Mesh(
-
-new THREE.BoxGeometry(0.15,2,0.3),
-
-new THREE.MeshStandardMaterial({
-color:0xdddddd,
-emissive:0x555555
-})
-
-);
-
-sword.position.set(1,0.5,0);
-
-player.add(sword);
-
-player.position.y = 3;
-
-scene.add(player);
-
-
-
-// ====================
-// 視点
-// ====================
+// =====================================
+// 視点移動
+// =====================================
 
 document.body.requestPointerLock =
 document.body.requestPointerLock ||
@@ -392,9 +344,10 @@ camera.rotation.x = pitch;
 
 
 
-// ====================
+
+// =====================================
 // 入力
-// ====================
+// =====================================
 
 const keys = {};
 
@@ -412,24 +365,48 @@ keys[e.key.toLowerCase()] = false;
 
 
 
-// ====================
-// ステータス
-// ====================
 
-let hp = 100;
-let stamina = 100;
-let exp = 0;
+// =====================================
+// ステータス
+// =====================================
+
+let hpValue = 100;
+let staminaValue = 100;
+let manaValue = 100;
+
 let level = 1;
 let coins = 0;
+let exp = 0;
 
 let velocityY = 0;
 let onGround = false;
 
 
 
-// ====================
+
+// =====================================
+// 武器
+// =====================================
+
+const sword = new THREE.Mesh(
+
+new THREE.BoxGeometry(0.2,2,0.3),
+
+new THREE.MeshStandardMaterial({
+color:0xffffff,
+emissive:0x444444
+})
+
+);
+
+scene.add(sword);
+
+
+
+
+// =====================================
 // 敵
-// ====================
+// =====================================
 
 const enemies = [];
 
@@ -437,7 +414,7 @@ function createEnemy(){
 
 const enemy = new THREE.Mesh(
 
-new THREE.BoxGeometry(2,3,2),
+new THREE.BoxGeometry(3,4,3),
 
 new THREE.MeshStandardMaterial({
 color:0xaa0000
@@ -446,9 +423,9 @@ color:0xaa0000
 );
 
 enemy.position.set(
-Math.random()*300-150,
+Math.random()*600-300,
 2,
-Math.random()*300-150
+Math.random()*600-300
 );
 
 enemy.hp = 5;
@@ -459,25 +436,26 @@ enemies.push(enemy);
 
 }
 
-for(let i=0;i<20;i++){
+for(let i=0;i<25;i++){
 createEnemy();
 }
 
 
 
-// ====================
+
+// =====================================
 // パーティクル
-// ====================
+// =====================================
 
 const particles = [];
 
 function burst(x,y,z,color){
 
-for(let i=0;i<20;i++){
+for(let i=0;i<25;i++){
 
 const p = new THREE.Mesh(
 
-new THREE.SphereGeometry(0.08),
+new THREE.SphereGeometry(0.1),
 
 new THREE.MeshBasicMaterial({
 color:color
@@ -501,9 +479,63 @@ particles.push(p);
 
 
 
-// ====================
+
+// =====================================
+// 魔法
+// =====================================
+
+const spells = [];
+
+function castSpell(color){
+
+if(manaValue <= 10) return;
+
+manaValue -= 10;
+
+const ball = new THREE.Mesh(
+
+new THREE.SphereGeometry(0.6),
+
+new THREE.MeshBasicMaterial({
+color:color
+})
+
+);
+
+ball.position.copy(camera.position);
+
+ball.dir = new THREE.Vector3(0,0,-1);
+
+ball.dir.applyQuaternion(camera.quaternion);
+
+scene.add(ball);
+
+spells.push(ball);
+
+}
+
+document.addEventListener("keydown",(e)=>{
+
+if(e.key==="1"){
+castSpell(0xff5500);
+}
+
+if(e.key==="2"){
+castSpell(0x00ffff);
+}
+
+if(e.key==="3"){
+castSpell(0xaa00ff);
+}
+
+});
+
+
+
+
+// =====================================
 // 攻撃
-// ====================
+// =====================================
 
 let attacking = false;
 
@@ -519,7 +551,7 @@ enemies.forEach((enemy,index)=>{
 
 const dist = enemy.position.distanceTo(camera.position);
 
-if(dist < 5){
+if(dist < 6){
 
 enemy.hp--;
 
@@ -531,10 +563,10 @@ enemy.position.z,
 );
 
 enemy.position.x +=
-(enemy.position.x-camera.position.x)*0.2;
+(enemy.position.x-camera.position.x)*0.3;
 
 enemy.position.z +=
-(enemy.position.z-camera.position.z)*0.2;
+(enemy.position.z-camera.position.z)*0.3;
 
 if(enemy.hp<=0){
 
@@ -555,11 +587,11 @@ exp += 20;
 
 if(exp>=100){
 
-exp=0;
+exp = 0;
 
 level++;
 
-hp=100;
+hpValue = 100;
 
 }
 
@@ -575,57 +607,19 @@ createEnemy();
 
 
 
-// ====================
-// 魔法
-// ====================
 
-const magicBalls = [];
+// =====================================
+// 初期位置
+// =====================================
 
-function castMagic(color){
-
-const ball = new THREE.Mesh(
-
-new THREE.SphereGeometry(0.5),
-
-new THREE.MeshBasicMaterial({
-color:color
-})
-
-);
-
-ball.position.copy(camera.position);
-
-ball.dir = new THREE.Vector3(0,0,-1);
-
-ball.dir.applyQuaternion(camera.quaternion);
-
-scene.add(ball);
-
-magicBalls.push(ball);
-
-}
-
-document.addEventListener("keydown",(e)=>{
-
-if(e.key==="1"){
-castMagic(0xff5500);
-}
-
-if(e.key==="2"){
-castMagic(0x00ffff);
-}
-
-if(e.key==="3"){
-castMagic(0xaa00ff);
-}
-
-});
+camera.position.set(0,5,10);
 
 
 
-// ====================
-// アニメーション
-// ====================
+
+// =====================================
+// メインループ
+// =====================================
 
 function animate(){
 
@@ -633,23 +627,28 @@ requestAnimationFrame(animate);
 
 
 
+
 // 移動
 
-let speed = 0.18;
+let speed = 0.25;
 
-if(keys["shift"] && stamina>0){
+if(keys["shift"] && staminaValue>0){
 
-speed = 0.35;
+speed = 0.5;
 
-stamina -= 0.4;
+staminaValue -= 0.5;
 
 }else{
 
-stamina += 0.2;
+staminaValue += 0.2;
 
 }
 
-stamina = Math.max(0,Math.min(100,stamina));
+staminaValue = Math.max(0,Math.min(100,staminaValue));
+
+manaValue += 0.05;
+
+manaValue = Math.min(100,manaValue);
 
 if(keys["w"]){
 
@@ -685,11 +684,12 @@ camera.position.z -= Math.sin(yaw)*speed;
 
 
 
+
 // ジャンプ
 
 if(keys[" "] && onGround){
 
-velocityY = 0.4;
+velocityY = 0.45;
 
 onGround = false;
 
@@ -711,26 +711,28 @@ onGround = true;
 
 
 
-// プレイヤー同期
 
-player.position.copy(camera.position);
+// 剣
 
-player.position.y -= 2;
+sword.position.copy(camera.position);
 
+const forward = new THREE.Vector3(0,0,-1);
 
+forward.applyQuaternion(camera.quaternion);
 
-// 剣アニメ
+sword.position.add(forward.multiplyScalar(1.5));
+
+sword.position.y -= 0.7;
+
+sword.rotation.copy(camera.rotation);
 
 if(attacking){
 
 sword.rotation.z =
--Math.sin(Date.now()*0.05)*2.5;
-
-}else{
-
-sword.rotation.z = 0;
+-Math.sin(Date.now()*0.05)*2;
 
 }
+
 
 
 
@@ -748,12 +750,12 @@ enemy.position
 ).normalize();
 
 enemy.position.add(
-dir.multiplyScalar(0.03)
+dir.multiplyScalar(0.04)
 );
 
 if(enemy.position.distanceTo(camera.position)<2){
 
-hp -= 0.05;
+hpValue -= 0.05;
 
 }
 
@@ -761,19 +763,20 @@ hp -= 0.05;
 
 
 
-// 魔法
 
-magicBalls.forEach((ball,index)=>{
+// 魔法更新
 
-ball.position.add(
-ball.dir.clone().multiplyScalar(1)
+spells.forEach((spell,index)=>{
+
+spell.position.add(
+spell.dir.clone().multiplyScalar(1.5)
 );
 
 enemies.forEach((enemy,eIndex)=>{
 
-const d = ball.position.distanceTo(enemy.position);
+const d = spell.position.distanceTo(enemy.position);
 
-if(d<2){
+if(d<3){
 
 enemy.hp -= 3;
 
@@ -784,9 +787,9 @@ enemy.position.z,
 0x00ffff
 );
 
-scene.remove(ball);
+scene.remove(spell);
 
-magicBalls.splice(index,1);
+spells.splice(index,1);
 
 if(enemy.hp<=0){
 
@@ -807,6 +810,7 @@ createEnemy();
 });
 
 });
+
 
 
 
@@ -834,40 +838,45 @@ particles.splice(index,1);
 
 
 
+
 // UI
 
-document.getElementById("hpFill")
-.style.width = hp + "%";
+document.getElementById("hp").style.width =
+hpValue + "%";
 
-document.getElementById("staminaFill")
-.style.width = stamina + "%";
+document.getElementById("stamina").style.width =
+staminaValue + "%";
 
-document.getElementById("expFill")
-.style.width = exp + "%";
+document.getElementById("mana").style.width =
+manaValue + "%";
 
-document.getElementById("text").innerHTML =
+document.getElementById("stats").innerHTML =
 
 `
-LEVEL: ${level}<br>
-COINS: ${coins}<br>
-ENEMIES: ${enemies.length}<br><br>
+LEVEL ${level}<br>
+COINS ${coins}<br>
+ENEMIES ${enemies.length}<br><br>
 
-1 炎魔法<br>
-2 氷魔法<br>
-3 雷魔法
+WASD 移動<br>
+SHIFT ダッシュ<br>
+SPACE ジャンプ<br>
+CLICK 剣攻撃<br>
+1 2 3 魔法
 `;
+
 
 
 
 // GAME OVER
 
-if(hp<=0){
+if(hpValue<=0){
 
 alert("GAME OVER");
 
 location.reload();
 
 }
+
 
 
 
